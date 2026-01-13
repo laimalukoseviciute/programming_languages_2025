@@ -1,0 +1,137 @@
+project:
+  type: default 
+
+format:
+  pdf:
+    papersize: a4
+    documentclass: article
+    latex-engine: xelatex
+    echo: false
+    toc: true
+    titlepage: true 
+    params:
+      show_notes: false
+    geometry:
+      - top=1.5cm
+      - bottom=1.5cm
+      - left=2cm
+      - right=2cm
+    mainfont: Anek Latin
+    colorlinks: true
+    linkcolor: MyPurple  
+    urlcolor: MyPurple
+    
+    include-in-header:
+      - text: |
+          % --- Packages  ---
+          \usepackage{xcolor}
+          \usepackage{graphicx}
+          \usepackage{eso-pic} 
+          \usepackage{fontspec} 
+          \setmainfont{Anek Latin}
+          \usepackage{textcase}
+          \usepackage{etoolbox}
+          \usepackage{fvextra}
+          \usepackage{fancyvrb}
+          \usepackage{fancyhdr}
+          \usepackage{caption}
+          \usepackage{framed}
+
+          % --- Global Color Definitions ---
+          \definecolor{MyPurple}{HTML}{9f9fca}
+          \definecolor{MyGreen}{HTML}{19c59f}
+          \definecolor{MyWhite}{HTML}{ffffff}
+          \definecolor{MyInv}{HTML}{141035}
+          \definecolor{DefaultTextColor}{HTML}{120e35} 
+          \definecolor{TitleColor}{HTML}{19C59F}
+          \definecolor{HeaderColor}{HTML}{19C59F}
+
+          % --- Custom Commands ---
+          \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\},breaklines,fontsize=\small}
+          \captionsetup{
+            labelfont={color=DefaultTextColor},
+            textfont={color=DefaultTextColor}
+          }
+          \AtBeginEnvironment{table}{\color{DefaultTextColor}}
+          \AtBeginEnvironment{table*}{\color{DefaultTextColor}}
+          \AtBeginEnvironment{figure}{\color{DefaultTextColor}}
+          \AtBeginEnvironment{figure*}{\color{DefaultTextColor}}
+          \AtBeginEnvironment{longtable}{\color{DefaultTextColor}}
+          \AtBeginEnvironment{tabular}{\color{DefaultTextColor}}
+
+          \pagestyle{fancy}
+          \fancyhf{}
+          \fancyfoot[C]{\textcolor{DefaultTextColor}{\thepage}}
+          \fancypagestyle{plain}{%
+            \fancyhf{}
+            \fancyfoot[C]{\textcolor{DefaultTextColor}{\thepage}}
+            \renewcommand{\headrulewidth}{0pt}
+            \renewcommand{\footrulewidth}{0pt}
+          }
+
+          % --- Global Color Definitions ---
+          \AtBeginDocument{\color{DefaultTextColor}}
+
+          % --- Custom Font Commands ---
+          \newcommand{\InvText}[1]{{\color{MyInv} \fontsize{36}{40}\selectfont \textbf{#1}}}
+          \newcommand{\ReportOnText}[1]{{\color{MyPurple} \fontsize{36}{40}\selectfont \textbf{#1}}}
+          \newcommand{\ProjectTitleText}[1]{{\color{MyGreen} \fontsize{48}{55}\selectfont \textbf{\MakeUppercase{#1}}}}
+          \newcommand{\ProjectSubtitleText}[1]{{\color{MyWhite} \fontsize{36}{40}\selectfont \textbf{#1}}}
+          \newcommand{\PreparedByText}[1]{{\color{MyPurple} \fontsize{18}{22}\selectfont \textbf{#1}}}
+          \newcommand{\AuthorDateText}[1]{{\color{MyWhite} \fontsize{18}{22}\selectfont \textbf{#1}}}
+          
+          % --- Background Picture ---
+          \newcommand\BackgroundPic{%
+            \put(0,0){%
+              \parbox[b][\paperheight]{\paperwidth}{%
+                \vfill
+                \centering
+                \includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{../config/background.jpg}% 
+                \vfill
+              }%
+            }%
+          }
+
+          % --- Custom Title Page Layout  ---
+          \providecommand{\MyProjectSubtitle}{}
+          \makeatletter
+          \renewcommand{\maketitle}{
+            \begin{titlepage}
+              
+              \AddToShipoutPicture*{\BackgroundPic} 
+              \vspace*{18em} 
+              
+              \begin{center}
+                
+                \ReportOnText{Report on} \par
+                \vspace{6em}
+                
+                \ProjectTitleText{\@title} \par
+                \vspace{2em}
+                
+                \ProjectSubtitleText{\MyProjectSubtitle} \par
+                \vspace{13em}
+                
+                \PreparedByText{Prepared by} \par
+                \vspace{1em}
+                
+                \AuthorDateText{\@author} \par
+                \vspace{15em}
+                
+                \AuthorDateText{\@date} \par
+                
+              \end{center}
+              
+              % Push any remaining space to the bottom
+              \vfill 
+              \clearpage 
+              
+            \end{titlepage}
+          }
+          \makeatother
+
+          % --- Section Heading Color ---
+          \usepackage{sectsty}
+          \sectionfont{\color{HeaderColor}}
+          \subsectionfont{\color{HeaderColor}}
+          \subsubsectionfont{\color{HeaderColor}}

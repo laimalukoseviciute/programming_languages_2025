@@ -116,7 +116,7 @@ format:
                 \vspace{1em}
                 
                 \AuthorDateText{\@author} \par
-                \vspace{15em}
+                \vspace{10em}
                 
                 \AuthorDateText{\@date} \par
                 

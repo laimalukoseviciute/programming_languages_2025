@@ -3,6 +3,15 @@ import numpy as np
 
 
 def show_missing_values(df):
+    """
+    Identifies and calculates the volume and percentage of missing data across all columns.
+
+
+    :param df: The DataFrame to be analyzed for missing (NaN) values.
+    :type df: pandas.DataFrame
+    :return: A summary DataFrame containing column names, missing counts, and their corresponding percentages.
+    :rtype: pandas.DataFrame
+    """
     missing_count = df.isna().sum()
     missing_percentage = round((df.isna().sum() / len(df)) * 100, 2)
 

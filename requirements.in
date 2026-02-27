@@ -1,11 +1,22 @@
-# Data Analysis
+# --- Core Data Processing ---
 pandas
+polars
 numpy
 
-# Visualization
+# --- Visualization & Reporting ---
 matplotlib
-plotly
 seaborn
+plotly
+nbformat  # Required for plotly static image export/rendering
 
-# Others
+# --- Async & Performance ---
+asyncio
+nest-asyncio
+tqdm
+
+# --- AI & LLM Integration ---
+ollama
+
+# --- Development & Environment ---
+ipython
 pip-tools

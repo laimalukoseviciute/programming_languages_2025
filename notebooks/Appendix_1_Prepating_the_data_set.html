@@ -2267,7 +2267,7 @@ var requirejs,require,define;(function(global,setTimeout){var req,s,head,baseEle
 <p>The initial raw data was gained from the Coresignal Multi-Source Jobs Dataset, which aggregates listings from major global job boards. Since the Job listings for 2025 have more than 60 mln job postings I have decided to extract the job titles in the US, only where the job title contains selected keywords (plural of the words was also accepted):</p>
 <p><code>developer</code> OR <code>analyst</code> OR <code>programmer</code> OR <code>programming</code> OR <code>scientists</code> OR <code>data</code> OR <code>researcher</code> OR <code>engineer</code> OR <code>engineering</code>.</p>
 <p>The data was extracted using this SQL query that can be seen below.</p>
-<div id="18e9c47e" class="cell" data-execution_count="3">
+<div id="18e9c47e" class="cell" data-execution_count="4">
 <div class="cell-output cell-output-display cell-output-markdown">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>            <span class="kw">SELECT</span> </span>
@@ -2339,14 +2339,14 @@ Table 1: The description of variables for data.
 </figure>
 </div>
 <p>A preview of the analysed dataset is presented below in <a href="#tbl-preview" class="quarto-xref">Table 2</a>.</p>
-<div class="cell" data-execution_count="4">
-<div id="tbl-preview" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="4">
+<div class="cell" data-execution_count="5">
+<div id="tbl-preview" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="5">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-preview-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table 2: Raw data pre-view first 5 rows. Note: if the table is not visible in pdf, please see html version of the report.
 </figcaption>
 <div aria-describedby="tbl-preview-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display" data-execution_count="4">
+<div class="cell-output cell-output-display" data-execution_count="29">
 <div>
 
 
@@ -2365,48 +2365,48 @@ Table 2: Raw data pre-view first 5 rows. Note: if the table is not visible in p
 <tbody>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">0</th>
-<td>Scientist (non-PhD), Tumor Immunogenicity</td>
-<td>Why Patients Need You Pfizer’s purpose is to d...</td>
+<td>Scientist (non-P...</td>
+<td>Why Patients Nee...</td>
 <td>NaN</td>
 <td>NaN</td>
 <td>California</td>
-<td>2025-09-23 18:17:30.006884 UTC</td>
+<td>2025-09-23 18:17...</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">1</th>
-<td>Sr. Scientist, CMC Analytical</td>
-<td>About Loyal Loyal is a clinical-stage veterina...</td>
+<td>Sr. Scientist, C...</td>
+<td>About Loyal Loya...</td>
 <td>Loyal</td>
-<td>Biotechnology Research</td>
+<td>Biotechnology Re...</td>
 <td>California</td>
-<td>2025-09-19 19:39:09.911273 UTC</td>
+<td>2025-09-19 19:39...</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">2</th>
-<td>Transit Coordinator - Financial Analyst</td>
-<td>Posted: Oct 1, 2025 Transit Coordinator - Fina...</td>
-<td>National Grants Management Association</td>
-<td>Non-profit Organizations</td>
+<td>Transit Coordina...</td>
+<td>Posted: Oct 1, 2...</td>
+<td>National Grants ...</td>
+<td>Non-profit Organ...</td>
 <td>Texas</td>
-<td>2025-09-29 09:04:55.399595 UTC</td>
+<td>2025-09-29 09:04...</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">3</th>
-<td>Senior Manager, Capacity Engineering, North Am...</td>
-<td>Description As the Capacity Engineering lead f...</td>
+<td>Senior Manager, ...</td>
+<td>Description As t...</td>
 <td>Amazon</td>
-<td>Software Development</td>
+<td>Software Develop...</td>
 <td>Tennessee</td>
-<td>2025-09-10 20:07:14.383757 UTC</td>
+<td>2025-09-10 20:07...</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">4</th>
-<td>Business Intelligence Engineer</td>
-<td>Job Title: Business Intelligence Engineer Loca...</td>
+<td>Business Intelli...</td>
+<td>Job Title: Busin...</td>
 <td>IntelliSavvy</td>
-<td>IT Services and IT Consulting</td>
+<td>IT Services and ...</td>
 <td>Washington</td>
-<td>2025-09-22 12:07:27.958388 UTC</td>
+<td>2025-09-22 12:07...</td>
 </tr>
 </tbody>
 </table>
@@ -2420,22 +2420,22 @@ Table 2: Raw data pre-view first 5 rows. Note: if the table is not visible in p
 </section>
 <section id="data-preparation" class="level1">
 <h1>Data Preparation</h1>
-<p>The extracted data totals approximately 10 GB. To ensure the system processes this volume of information efficiently, I have partitioned the data into 11 separate files. After the programming language data is extracted, the “description” column will be removed. This adjustment allows the information from all files to be combined into a single dataset for the analysis and saved to the file <code>data/processed/jobs_proc_2025_no_desc.csv</code>.</p>
+<p>The extracted data totals approximately 10 GB. To ensure the system processes this volume of information efficiently, I have partitioned the data into 11 separate files. After the programming language data is extracted, the “description” column will be removed. This adjustment allows the information from all files to be combined into a single dataset for the analysis and saved to the file <code>data/processed/languages/jobs_proc_2025_no_desc.csv</code>.</p>
 <p>The function <code>extract_programming_languages</code> extracts these programming languages: Python, SQL, Java, JavaScript, TypeScript, C++, C#, Objective-C, C, R, Go, Swift, PHP, Ruby, Kotlin, Rust, Matlab, Scala, Perl, Dart, Bash, Assembly. The detection of all the langueges except “Go” are handaled with regular expressions. To process the language “Go” I will be using LLM to interpret the meaning of the word “go” in the description.</p>
 <p>Below you can see the list of all the languages found and the corresponding quantities of job postings where that language was menationed.</p>
-<div id="c4735cb4" class="cell" data-execution_count="6">
+<div id="c4735cb4" class="cell" data-execution_count="7">
 <div class="cell-output cell-output-stdout">
 <pre><code>(2062297, 27)</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="7">
-<div id="tbl-preview-langs" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="7">
+<div class="cell" data-execution_count="8">
+<div id="tbl-preview-langs" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="8">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-preview-langs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table 3: Raw data pre-view first 5 rows. Note: if the table is not visible in pdf, please see html version of the report.
 </figcaption>
 <div aria-describedby="tbl-preview-langs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display" data-execution_count="7">
+<div class="cell-output cell-output-display" data-execution_count="32">
 <div>
 
 
@@ -2455,7 +2455,7 @@ Table 3: Raw data pre-view first 5 rows. Note: if the table is not visible in p
 <tbody>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">0</th>
-<td>Scientist (non-PhD), Tumor Immunogenicity</td>
+<td>Scientist (non-P...</td>
 <td>0</td>
 <td>0</td>
 <td>0</td>
@@ -2465,7 +2465,7 @@ Table 3: Raw data pre-view first 5 rows. Note: if the table is not visible in p
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">1</th>
-<td>Sr. Scientist, CMC Analytical</td>
+<td>Sr. Scientist, C...</td>
 <td>0</td>
 <td>0</td>
 <td>0</td>
@@ -2475,7 +2475,7 @@ Table 3: Raw data pre-view first 5 rows. Note: if the table is not visible in p
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">2</th>
-<td>Transit Coordinator - Financial Analyst</td>
+<td>Transit Coordina...</td>
 <td>0</td>
 <td>0</td>
 <td>0</td>
@@ -2485,7 +2485,7 @@ Table 3: Raw data pre-view first 5 rows. Note: if the table is not visible in p
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">3</th>
-<td>Senior Manager, Capacity Engineering, North Am...</td>
+<td>Senior Manager, ...</td>
 <td>1</td>
 <td>1</td>
 <td>0</td>
@@ -2495,7 +2495,7 @@ Table 3: Raw data pre-view first 5 rows. Note: if the table is not visible in p
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">4</th>
-<td>Business Intelligence Engineer</td>
+<td>Business Intelli...</td>
 <td>1</td>
 <td>1</td>
 <td>0</td>
@@ -2517,8 +2517,8 @@ Table 3: Raw data pre-view first 5 rows. Note: if the table is not visible in p
 <p>The <code>extract_programming_languages</code> function utilizes the Ollama Large Language Model (LLM) to identify the meaning of the word “Go”. To ensure the most consistency of these results and minimize variability in model output, the temperature parameter is set to 0.</p>
 </blockquote>
 <p>Below I will evaluate the error rate for the other programming languages. Which of them mean the language and which of them do not. The list of languages can be seen below. “Go_verified” will not be checked.</p>
-<div id="dddfb79b" class="cell" data-execution_count="8">
-<div class="cell-output cell-output-display" data-execution_count="8">
+<div id="dddfb79b" class="cell" data-execution_count="9">
+<div class="cell-output cell-output-display" data-execution_count="33">
 <pre><code>[&#39;Python&#39;,
  &#39;SQL&#39;,
  &#39;Java&#39;,
@@ -2544,14 +2544,14 @@ Table 3: Raw data pre-view first 5 rows. Note: if the table is not visible in p
 </div>
 </div>
 <p>Below at <a href="#tbl-precision" class="quarto-xref">Table 4</a> you can see the preciton evaluation for each language. These precision evaluations are not very precice. I just evaluated it by going through the raw files, python was always a programming language in the given sample, not somwthing else. Thus I will implement them only for languages that need them. Like “R”, “C”, and “Assembly”. Because there are a lot of engineers that are required to work with “assembly lines”.</p>
-<div class="cell" data-execution_count="10">
-<div id="tbl-precision" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="10">
+<div class="cell" data-execution_count="11">
+<div id="tbl-precision" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="11">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-precision-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table 4: Precision evaluation of the programming languages.
 </figcaption>
 <div aria-describedby="tbl-precision-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display" data-execution_count="10">
+<div class="cell-output cell-output-display" data-execution_count="35">
 <div>
 
 
@@ -2678,16 +2678,8 @@ Table 4: Precision evaluation of the programming languages.
 </figure>
 </div>
 </div>
-<div id="372ba7ff" class="cell" data-execution_count="12">
-<div class="cell-output cell-output-stderr">
-<pre><code>/var/folders/1_/mwhsmc3x39g2h4ny87__zzsr0000gn/T/ipykernel_71775/2410304175.py:3: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value &#39;[34499.2]&#39; has dtype incompatible with int64, please explicitly cast to a compatible dtype first.
-  top_programming_languages[&quot;C&quot;]= top_programming_languages[&quot;C&quot;]*df_precision[df_precision[&quot;language&quot;]==&quot;C&quot;][&quot;precision&quot;]
-/var/folders/1_/mwhsmc3x39g2h4ny87__zzsr0000gn/T/ipykernel_71775/2410304175.py:4: FutureWarning: Calling float on a single element Series is deprecated and will raise a TypeError in the future. Use float(ser.iloc[0]) instead
-  top_programming_languages[&quot;R&quot;]= top_programming_languages[&quot;R&quot;]*df_precision[df_precision[&quot;language&quot;]==&quot;R&quot;][&quot;precision&quot;]
-/var/folders/1_/mwhsmc3x39g2h4ny87__zzsr0000gn/T/ipykernel_71775/2410304175.py:5: FutureWarning: Calling float on a single element Series is deprecated and will raise a TypeError in the future. Use float(ser.iloc[0]) instead
-  top_programming_languages[&quot;Assembly&quot;]= top_programming_languages[&quot;Assembly&quot;]*df_precision[df_precision[&quot;language&quot;]==&quot;Assembly&quot;][&quot;precision&quot;]</code></pre>
-</div>
-<div class="cell-output cell-output-display" data-execution_count="12">
+<div id="372ba7ff" class="cell" data-execution_count="13">
+<div class="cell-output cell-output-display" data-execution_count="37">
 <pre><code>Python         401168.00
 SQL            387326.00
 Java           176246.00
@@ -2717,8 +2709,8 @@ dtype: float64</code></pre>
 <h2 class="anchored" data-anchor-id="observations-and-features">Observations and Features</h2>
 <p>To make sure the function did what it was suppose to do let’s do the exploration of the dataset’s structure. I will examine the characteristics of each column to ensure data integrity and understand the available information.</p>
 <p>Below you can see the list of all the columns in the processed dataframe. All the programming languages were included.</p>
-<div id="12684315" class="cell" data-execution_count="13">
-<div class="cell-output cell-output-display" data-execution_count="13">
+<div id="12684315" class="cell" data-execution_count="14">
+<div class="cell-output cell-output-display" data-execution_count="38">
 <pre><code>Index([&#39;title&#39;, &#39;company_name&#39;, &#39;company_industry&#39;, &#39;state&#39;, &#39;created_at&#39;,
        &#39;Python&#39;, &#39;SQL&#39;, &#39;Java&#39;, &#39;JavaScript&#39;, &#39;TypeScript&#39;, &#39;C++&#39;, &#39;C#&#39;,
        &#39;Objective-C&#39;, &#39;C&#39;, &#39;R&#39;, &#39;Swift&#39;, &#39;PHP&#39;, &#39;Ruby&#39;, &#39;Kotlin&#39;, &#39;Rust&#39;,
@@ -2727,14 +2719,14 @@ dtype: float64</code></pre>
 </div>
 </div>
 <p>Below <a href="#tbl-description" class="quarto-xref">Table 5</a> you can see the description of categorical data. We can see that there are 598373 unique title in the data and 107161 unique companies.Top industry is Software Development, and top state is California. At <a href="#tbl-description-date" class="quarto-xref">Table 6</a> you can see that the data covers 2025.</p>
-<div class="cell" data-execution_count="16">
-<div id="tbl-description" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="16">
+<div class="cell" data-execution_count="17">
+<div id="tbl-description" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="17">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-description-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table 5: Description of the categorical data
 </figcaption>
 <div aria-describedby="tbl-description-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display" data-execution_count="16">
+<div class="cell-output cell-output-display" data-execution_count="41">
 <div>
 
 
@@ -2767,7 +2759,7 @@ Table 5: Description of the categorical data
 <th data-quarto-table-cell-role="th">top</th>
 <td>Financial Analyst</td>
 <td>Jobs via Dice</td>
-<td>Software Development</td>
+<td>Software Develop...</td>
 <td>California</td>
 </tr>
 <tr class="even">
@@ -2786,14 +2778,14 @@ Table 5: Description of the categorical data
 </figure>
 </div>
 </div>
-<div class="cell" data-execution_count="17">
-<div id="tbl-description-date" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="17">
+<div class="cell" data-execution_count="18">
+<div id="tbl-description-date" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="18">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-description-date-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table 6: Description of the date data
 </figcaption>
 <div aria-describedby="tbl-description-date-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display" data-execution_count="17">
+<div class="cell-output cell-output-display" data-execution_count="42">
 <div>
 
 
@@ -2811,27 +2803,27 @@ Table 6: Description of the date data
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">mean</th>
-<td>2025-06-22 23:52:19.825892096+00:00</td>
+<td>2025-06-22 23:52...</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">min</th>
-<td>2025-01-01 00:14:21+00:00</td>
+<td>2025-01-01 00:14...</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">25%</th>
-<td>2025-03-25 02:28:17.284700928+00:00</td>
+<td>2025-03-25 02:28...</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">50%</th>
-<td>2025-06-25 07:36:12.390136064+00:00</td>
+<td>2025-06-25 07:36...</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">75%</th>
-<td>2025-09-12 19:41:54.569914880+00:00</td>
+<td>2025-09-12 19:41...</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">max</th>
-<td>2025-12-19 09:18:48.440245+00:00</td>
+<td>2025-12-19 09:18...</td>
 </tr>
 </tbody>
 </table>
@@ -2846,14 +2838,14 @@ Table 6: Description of the date data
 <section id="duplicate-and-missing-values" class="level2">
 <h2 class="anchored" data-anchor-id="duplicate-and-missing-values">Duplicate and Missing Values</h2>
 <p>In this section I will analyse if the data set has any duplicated observations or missing values. From the outputs below we can see that data have 337390 missing values in column <code>state</code>, 175057 in column <code>company_industry</code>, and 175057 in <code>company_name</code>. The full breakdown can be seen below in <a href="#tbl-missing-values" class="quarto-xref">Table 7</a>.</p>
-<div class="cell" data-execution_count="18">
-<div id="tbl-missing-values" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="18">
+<div class="cell" data-execution_count="19">
+<div id="tbl-missing-values" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="19">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-missing-values-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table 7: Missing values in the data set by column.
 </figcaption>
 <div aria-describedby="tbl-missing-values-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display" data-execution_count="18">
+<div class="cell-output cell-output-display" data-execution_count="43">
 <div>
 
 
@@ -3039,7 +3031,7 @@ Table 7: Missing values in the data set by column.
 </div>
 </div>
 <p>720741 were duplicated values. I will keep missing values, and will do the analyses with them in mind, and I will remove the duplicated values, since it is the same job posting.</p>
-<div id="9b062ed7" class="cell" data-execution_count="19">
+<div id="9b062ed7" class="cell" data-execution_count="20">
 <div class="cell-output cell-output-stdout">
 <pre><code>Number of duplicated values:  720720</code></pre>
 </div>
@@ -3048,15 +3040,15 @@ Table 7: Missing values in the data set by column.
 <section id="outliers" class="level2">
 <h2 class="anchored" data-anchor-id="outliers">Outliers</h2>
 <p>In this section let’s look for some obvious outliers or other descrepencies in the data. The job <code>title</code> contains some obvious outliers, like resercher that is not related to data, but rather the academic enviroment, and egnineering manager mignt not need any knowlage of the programming languages, thus I will remove all the rows that have no mentions of any programming languages. I will also filter out the job</p>
-<div id="810bc941-0a4b-49ea-98bd-abc5d9a7bd4b" class="cell" data-execution_count="21">
+<div id="810bc941-0a4b-49ea-98bd-abc5d9a7bd4b" class="cell" data-execution_count="22">
 <div class="cell-output cell-output-stdout">
 <pre><code>Number of rows and columns after filtering jobs (rows) that have no mentions of programming languages:
 (581120, 27)</code></pre>
 </div>
 </div>
 <p>Also some single letter languages like C and R might be caught due to the fact that there are typos like: “C ompletely” or “R esponcible” in the job descriptions.</p>
-<div id="07e8737b" class="cell" data-execution_count="22">
-<div class="cell-output cell-output-display" data-execution_count="22">
+<div id="07e8737b" class="cell" data-execution_count="23">
+<div class="cell-output cell-output-display" data-execution_count="47">
 <pre><code>array([&#39;Tennessee&#39;, &#39;Washington&#39;, &#39;California&#39;, &#39;Utah&#39;, nan, &#39;Wisconsin&#39;,
        &#39;Texas&#39;, &#39;Idaho&#39;, &#39;Indiana&#39;, &#39;Michigan&#39;, &#39;Massachusetts&#39;,
        &#39;New York&#39;, &#39;Illinois&#39;, &#39;Arizona&#39;, &#39;North Carolina&#39;, &#39;Virginia&#39;,
@@ -3081,13 +3073,13 @@ Table 7: Missing values in the data set by column.
 </div>
 </div>
 <p>These are states and US territories, which have left after the cleaning.</p>
-<div id="62dd8418" class="cell" data-execution_count="23">
-<div class="cell-output cell-output-display" data-execution_count="23">
+<div id="62dd8418" class="cell" data-execution_count="24">
+<div class="cell-output cell-output-display" data-execution_count="48">
 <pre><code>55</code></pre>
 </div>
 </div>
-<div id="1e448553" class="cell" data-execution_count="24">
-<div class="cell-output cell-output-display" data-execution_count="24">
+<div id="1e448553" class="cell" data-execution_count="25">
+<div class="cell-output cell-output-display" data-execution_count="49">
 <pre><code>array([&#39;Alabama&#39;, &#39;Alaska&#39;, &#39;Arizona&#39;, &#39;Arkansas&#39;, &#39;California&#39;,
        &#39;Colorado&#39;, &#39;Connecticut&#39;, &#39;Delaware&#39;, &#39;District of Columbia&#39;,
        &#39;Florida&#39;, &#39;Georgia&#39;, &#39;Guam&#39;, &#39;Hawaii&#39;, &#39;Idaho&#39;, &#39;Illinois&#39;,
@@ -3102,8 +3094,8 @@ Table 7: Missing values in the data set by column.
        &#39;Wisconsin&#39;, &#39;Wyoming&#39;], dtype=object)</code></pre>
 </div>
 </div>
-<div id="02d02f0e" class="cell" data-execution_count="25">
-<div class="cell-output cell-output-display" data-execution_count="25">
+<div id="02d02f0e" class="cell" data-execution_count="26">
+<div class="cell-output cell-output-display" data-execution_count="50">
 <pre><code>broad_industry_group
 Tech, Data &amp; Telecom                       256058
 Professional, Legal &amp; Business Services     82789
@@ -3133,11 +3125,11 @@ Name: count, dtype: int64</code></pre>
 <li><p>Developer: Traditional software creation and programming roles.</p></li>
 </ul>
 <p>This categorization simplifies the comparison of programming language requirements across different professional functions. The final dataframe can be found in file <code>data/processed/jobs_filtered_2025_no_desc.csv</code>.</p>
-<div id="a2944448" class="cell" data-execution_count="26">
+<div id="a2944448" class="cell" data-execution_count="27">
 <div class="cell-output cell-output-stdout">
 <pre><code>(581120, 33)</code></pre>
 </div>
-<div class="cell-output cell-output-display" data-execution_count="26">
+<div class="cell-output cell-output-display" data-execution_count="51">
 <div>
 
 
@@ -3171,16 +3163,16 @@ Name: count, dtype: int64</code></pre>
 <tbody>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">3</th>
-<td>Senior Manager, Capacity Engineering, North Am...</td>
+<td>Senior Manager, ...</td>
 <td>1</td>
 <td>1</td>
 <td>0</td>
 <td>0</td>
 <td>0</td>
 <td>Amazon</td>
-<td>Software Development</td>
+<td>Software Develop...</td>
 <td>Tennessee</td>
-<td>2025-09-10 20:07:14.383757+00:00</td>
+<td>2025-09-10 20:07:...</td>
 <td>...</td>
 <td>0</td>
 <td>0</td>
@@ -3191,20 +3183,20 @@ Name: count, dtype: int64</code></pre>
 <td>0</td>
 <td>0</td>
 <td>0</td>
-<td>Tech, Data &amp; Telecom</td>
+<td>Tech, Data &amp; Tel...</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">4</th>
-<td>Business Intelligence Engineer</td>
+<td>Business Intelli...</td>
 <td>0</td>
 <td>1</td>
 <td>0</td>
 <td>0</td>
 <td>0</td>
 <td>IntelliSavvy</td>
-<td>IT Services and IT Consulting</td>
+<td>IT Services and ...</td>
 <td>Washington</td>
-<td>2025-09-22 12:07:27.958388+00:00</td>
+<td>2025-09-22 12:07:...</td>
 <td>...</td>
 <td>0</td>
 <td>0</td>
@@ -3215,20 +3207,20 @@ Name: count, dtype: int64</code></pre>
 <td>0</td>
 <td>0</td>
 <td>0</td>
-<td>Tech, Data &amp; Telecom</td>
+<td>Tech, Data &amp; Tel...</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">5</th>
-<td>HAZARDOUS SUBSTANCES ENGINEER</td>
+<td>HAZARDOUS SUBSTA...</td>
 <td>0</td>
 <td>1</td>
 <td>0</td>
 <td>0</td>
 <td>0</td>
-<td>California Department of Toxic Substances Control</td>
-<td>Environmental Services</td>
+<td>California Depar...</td>
+<td>Environmental Se...</td>
 <td>California</td>
-<td>2025-06-04 00:17:34+00:00</td>
+<td>2025-06-04 00:17:...</td>
 <td>...</td>
 <td>0</td>
 <td>0</td>
@@ -3239,20 +3231,20 @@ Name: count, dtype: int64</code></pre>
 <td>0</td>
 <td>0</td>
 <td>0</td>
-<td>Energy, Utilities &amp; Environment</td>
+<td>Energy, Utilitie...</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">9</th>
-<td>Senior ASIC Synthesis Engineer</td>
+<td>Senior ASIC Synt...</td>
 <td>0</td>
 <td>1</td>
 <td>0</td>
 <td>0</td>
 <td>0</td>
 <td>NVIDIA</td>
-<td>Computer Hardware Manufacturing</td>
+<td>Computer Hardwar...</td>
 <td>California</td>
-<td>2025-07-02 06:12:14+00:00</td>
+<td>2025-07-02 06:12:...</td>
 <td>...</td>
 <td>0</td>
 <td>0</td>
@@ -3263,20 +3255,20 @@ Name: count, dtype: int64</code></pre>
 <td>0</td>
 <td>0</td>
 <td>0</td>
-<td>Tech, Data &amp; Telecom</td>
+<td>Tech, Data &amp; Tel...</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">12</th>
-<td>Product Security Engineer</td>
+<td>Product Security...</td>
 <td>0</td>
 <td>1</td>
 <td>0</td>
 <td>0</td>
 <td>0</td>
 <td>Grammarly</td>
-<td>Software Development</td>
+<td>Software Develop...</td>
 <td>California</td>
-<td>2025-08-14 07:03:47.996797+00:00</td>
+<td>2025-08-14 07:03:...</td>
 <td>...</td>
 <td>0</td>
 <td>0</td>
@@ -3287,7 +3279,7 @@ Name: count, dtype: int64</code></pre>
 <td>0</td>
 <td>0</td>
 <td>1</td>
-<td>Tech, Data &amp; Telecom</td>
+<td>Tech, Data &amp; Tel...</td>
 </tr>
 </tbody>
 </table>

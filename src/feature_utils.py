@@ -1,10 +1,14 @@
 import re
+import os
+
+import gc
 import asyncio
-import pandas as pd
 import numpy as np
-import re
 from ollama import AsyncClient
+import pandas as pd
+import polars as pl
 import nest_asyncio
+from tqdm.asyncio import tqdm as atqdm
 
 nest_asyncio.apply()
 
@@ -12,7 +16,17 @@ nest_asyncio.apply()
 async def verify_single_row(client, snippet, language):
     """
     Sends a single request to Ollama asynchronously.
+
+    :param client: The Ollama client.
+    :type client: ollama.AsyncClient
+    :param snippet: The job description snippet.
+    :type snippet: str
+    :param language: The language to verify.
+    :type language: str
+    :return: The verification result.
+    :rtype: int
     """
+
     prompt = f"""
     [INST]
     You are a technical recruiter. Analyze the job description snippet.
@@ -38,33 +52,36 @@ async def verify_single_row(client, snippet, language):
     content = response["message"]["content"].strip()
     return 1 if "1" in content else 0
 
+
 async def verify_single_row_tools(client, snippet, tool):
     """
-    Asynchronously classifies if a term in a snippet is a technical tool using Llama 3.2.
+    Verifies a single row of a tool using Ollama asynchronously.
 
-    :param client: The asynchronous Ollama client instance.
+    :param client: The Ollama client.
     :type client: ollama.AsyncClient
-    :param snippet: The job description text fragment.
+    :param snippet: The job description snippet.
     :type snippet: str
-    :param tool: The specific tool to verify.
+    :param tool: The tool to verify.
     :type tool: str
-    :return: 1 if the tool is used in a technical context, 0 otherwise.
+    :return: The verification result.
     :rtype: int
     """
-    
     system_content = (
-        "You are a technical data annotator. Your task is to identify if a term refers to a "
-        "software tool, framework, or library within a job description.\n\n"
-        "Rules:\n"
-        "- Score 1: Used as a tech tool (e.g., 'Experience in Go', 'dbt developer').\n"
-        "- Score 0: Used as a common verb/noun, URL, or typo (e.g., 'Must go to', '/git/repo').\n"
-        "Respond with exactly one character: '1' or '0'."
+        "You are a professional data labeler. Your only job is to detect if a "
+        "word is used as a technical software tool or a general English word."
     )
 
     user_content = (
-        f"Target Tool: \"{tool}\"\n"
-        f"Snippet: \"{snippet}\"\n"
-        "Answer (1 or 0):"
+        f"Analyze the word '{tool}' in the snippet below.\n\n"
+        "Criteria for 1 (YES):\n"
+        "- Mentioned as a skill, software, or part of a tech stack.\n"
+        "Criteria for 0 (NO):\n"
+        "- Used as a verb (to excel), adjective (excellent), or part of a URL.\n"
+        "- Used in a non-technical context (building airflow).\n\n"
+        "Example 1: 'Advanced Excel skills required' -> 1\n"
+        "Example 2: 'Must excel at communication' -> 0\n\n"
+        f'Snippet: "{snippet}"\n\n'
+        "Final Answer (Respond with ONLY 1 or 0):"
     )
 
     response = await client.chat(
@@ -73,21 +90,27 @@ async def verify_single_row_tools(client, snippet, tool):
             {"role": "system", "content": system_content},
             {"role": "user", "content": user_content},
         ],
-        options={
-            "temperature": 0.0,  
-            "num_ctx": 1024,   
-            "num_predict": 2   
-        },
+        options={"temperature": 0.0, "num_ctx": 2048, "num_predict": 2},
     )
-    
+
     content = response["message"]["content"].strip()
-    
     return 1 if "1" in content else 0
 
 
 async def process_batch(df_subset, description_col, language, pattern):
     """
     Processes a batch of rows concurrently.
+
+    :param df_subset: The subset of the DataFrame to process.
+    :type df_subset: pandas.DataFrame
+    :param description_col: The column containing the job description text.
+    :type description_col: str
+    :param language: The language to verify.
+    :type language: str
+    :param pattern: The regex pattern to use for the verification.
+    :type pattern: str
+    :return: The verification results.
+    :rtype: list
     """
     client = AsyncClient()
     tasks = []
@@ -96,7 +119,7 @@ async def process_batch(df_subset, description_col, language, pattern):
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
             start, end = match.span()
-            snippet = text[max(0, start - 100) : min(len(text), end + 100)]
+            snippet = text[max(0, start - 200) : min(len(text), end + 200)]
             tasks.append(verify_single_row(client, snippet, language))
         else:
 
@@ -108,27 +131,50 @@ async def process_batch(df_subset, description_col, language, pattern):
     return await asyncio.gather(*tasks)
 
 
-async def process_batch_tools(df_subset, description_col, tool, pattern):
+async def process_batch_tools(df_subset, description_col, tool, pattern, pbar=None):
     """
-    Processes a batch of rows concurrently.
+    Processes rows concurrently and updates a shared progress bar for every request.
+
+    :param df_subset: The subset of the DataFrame to process.
+    :type df_subset: pandas.DataFrame
+    :param description_col: The column containing the job description text.
+    :type description_col: str
+    :param tool: The tool to verify.
+    :type tool: str
+    :param pattern: The regex pattern to use for the verification.
+    :type pattern: str
+    :param pbar: The progress bar to update.
+    :type pbar: tqdm.asyncio.tqdm
+    :return: The verification results.
+    :rtype: list
     """
     client = AsyncClient()
+    semaphore = asyncio.Semaphore(20) 
     tasks = []
 
+    async def verified_with_progress(snippet, tool):
+        async with semaphore:
+            result = await verify_single_row_tools(client, snippet, tool)
+            if pbar:
+                pbar.update(1) 
+            return result
+
     for text in df_subset[description_col]:
-        match = re.search(pattern, text, re.IGNORECASE)
+        match = re.search(pattern, str(text), re.IGNORECASE)
         if match:
             start, end = match.span()
-            snippet = text[max(0, start - 100) : min(len(text), end + 100)]
-            tasks.append(verify_single_row_tools(client, snippet, tool))
+            snippet = text[max(0, start - 300) : min(len(text), end + 300)]
+            tasks.append(verified_with_progress(snippet, tool))
         else:
-
-            async def return_zero():
+            async def auto_zero():
+                if pbar:
+                    pbar.update(1)
                 return 0
 
-            tasks.append(return_zero())
+            tasks.append(auto_zero())
 
     return await asyncio.gather(*tasks)
+
 
 def checking_go_lang(df, description_col, potential_col, golang_col):
     """
@@ -290,9 +336,7 @@ def checking_a_lang(df, description_col, potential_col):
     return df_copy
 
 
-
-
-async def checking_a_tool(df, description_col, potential_col):
+async def checking_a_tool(df, description_col, potential_col, pbar=None):
     """
     Verifies if a specific tool mention is a technical tool using LLM context.
     Designed for large-scale job post analysis on Mac M4 Pro.
@@ -309,11 +353,8 @@ async def checking_a_tool(df, description_col, potential_col):
     :rtype: pd.DataFrame
     """
     tool_patterns = {
-        # --- Foundational & Spreadsheets ---
         "Excel": r"\b(Excel|Spreadsheets)\b",
         "Google_Sheets": r"\b(Google Sheets|G-Sheets)\b",
-        
-        # --- Modern Data Stack (Core) ---
         "Fivetran": r"\bFivetran\b",
         "Airbyte": r"\bAirbyte\b",
         "dbt": r"\bdbt\b",
@@ -324,23 +365,17 @@ async def checking_a_tool(df, description_col, potential_col):
         "Power_BI": r"\b(Power BI|PowerBI)\b",
         "Tableau": r"\bTableau\b",
         "Looker": r"\bLooker\b",
-        
-        # --- Engineering & Infrastructure ---
         "Git": r"\b(Git|GitHub|GitLab|Version Control)\b",
         "Docker": r"\b(Docker|Containers)\b",
         "Kubernetes": r"\b(Kubernetes|K8s)\b",
         "Terraform": r"\bTerraform\b",
-        
-        # --- Cloud Platforms ---
         "AWS": r"\b(AWS|Amazon Web Services)\b",
         "Azure": r"\b(Azure)\b",
         "GCP": r"\b(GCP|Google Cloud)\b",
-        
-        # --- Emerging 2026 Trends ---
         "Databricks": r"\bDatabricks\b",
         "Kafka": r"\b(Kafka|Apache Kafka)\b",
         "Spark": r"\b(Spark|PySpark|Apache Spark)\b",
-        "Monte_Carlo": r"\bMonte Carlo\b"
+        "Monte_Carlo": r"\bMonte Carlo\b",
     }
     pattern = tool_patterns[potential_col]
     print(f"Verifying {potential_col}...")
@@ -348,20 +383,50 @@ async def checking_a_tool(df, description_col, potential_col):
     verified_col = f"{potential_col}_verified"
     df_copy[verified_col] = 0
 
-    # Filter only for rows where regex initially found a potential match
     mask = df_copy[potential_col] == 1
-    
+
     if mask.any():
-        # process_batch_tools is your async function that calls verify_single_row_tools
         verified_results = await process_batch_tools(
-            df_copy[mask], 
-            description_col, 
-            potential_col, 
-            pattern
+            df[mask],
+            description_col,
+            potential_col,
+            pattern,
+            pbar=pbar,  
         )
         df_copy.loc[mask, verified_col] = verified_results
 
     return df_copy
+
+
+async def verify_tool_parallel(tool, num_files=11):
+    """
+    Parallelizes tool verification across all data shards.
+    """
+    tasks = []
+
+    print(f"--- Starting Parallel Verification for: {tool} ---")
+    for i in range(1, num_files + 1):
+        file_path = f"../data/processed/tools/jobs_proc_all_USA_2025_{i}.csv"
+
+        if not os.path.exists(file_path):
+            continue
+        df_shard = pd.read_csv(file_path)
+        df_matches = df_shard[df_shard[tool] == 1]
+
+        if len(df_matches) > 0:
+            tasks.append(checking_a_tool(df_matches, "description", tool))
+
+    print(f"Gathering {len(tasks)} file-shards for concurrent processing...")
+    results = await asyncio.gather(*tasks)
+    if results:
+        df_final = pd.concat(results, ignore_index=True)
+        out_path = (
+            f"../data/processed/tools/verification/jobs_proc_all_USA_2025_{tool}.csv"
+        )
+        df_final.to_csv(out_path, index=False)
+        print(f"Done! Saved {len(df_final)} verified rows to {out_path}")
+    else:
+        print("No matches found to verify.")
 
 
 def extract_programming_languages(df, description_col="description"):
@@ -854,9 +919,9 @@ def create_faang_df(df):
     patterns = {
         "Meta": r"\bMeta\b(?!\s+(?:Care|Sensing|Resources|Group))\b|\b(?:Facebook|Instagram|WhatsApp|Oculus)\b",
         "Google": r"\b(?:Google|Alphabet|YouTube|DeepMind)\b",
-        "Amazon": r"\b(?:Amazon|AWS|Whole Foods)\b",
+        "Amazon": r"\b(?:Amazon|AWS)\b",
         "Apple": r"\bApple\b",
-        "Microsoft": r"\b(?:Microsoft|LinkedIn|GitHub|Azure)\b",
+        "Netflix": r"\bNetflix\b",
     }
 
     df["faang_category"] = None
@@ -925,10 +990,54 @@ def get_dominant_language_by_state(df, languages):
     return dominant_langs
 
 
+async def run_full_verification(tools_list, shard_count=11, batch_size=5000):
+    """
+    Analyzes the ENTIRE dataset. Processes shards sequentially to save RAM,
+    but batches rows within shards to keep the LLM busy without crashing.
+    """
+    for tool in tools_list:
+        print(f"\nFull Verification: {tool}")
+
+        for i in range(1, shard_count + 1):
+            path = f"../data/processed/tools/jobs_proc_all_USA_2025_{i}.csv"
+            if not os.path.exists(path):
+                continue
+
+            lazy_shard = pl.scan_csv(path).filter(pl.col(tool) == 1)
+            shard_matches_count = lazy_shard.select(pl.len()).collect().item()
+            print(f"Shard {i}: Found {shard_matches_count:,} total matches for {tool}")
+
+            shard_results = []
+
+            with atqdm(
+                total=shard_matches_count, desc=f"   Shard {i} Progress", unit="row"
+            ) as pbar:
+                for offset in range(0, shard_matches_count, batch_size):
+                    df_batch = (
+                        lazy_shard.slice(offset, batch_size).collect().to_pandas()
+                    )
+
+                    verified_batch_pd = await checking_a_tool(
+                        df_batch, "description", tool, pbar=pbar
+                    )
+
+                    shard_results.append(pl.from_pandas(verified_batch_pd))
+                    gc.collect()
+            if shard_results:
+                df_shard_final = pl.concat(shard_results)
+                out_path = f"../data/processed/tools/verification/verified_{tool}_shard_{i}.csv"
+                df_shard_final.write_csv(out_path)
+                print(f"Saved verified shard to: {out_path}")
+
+            del shard_results
+            gc.collect()
+
+    print(f"\n All verification tasks for {tools_list} completed.")
+
 
 def extract_tech_tools(df, description_col="description"):
     """
-    Extracts high-priority tech tools across Data Engineering, Analytics, 
+    Extracts high-priority tech tools across Data Engineering, Analytics,
     and Infrastructure layers for a 2026 job market analysis.
 
     :param df: The pandas DataFrame containing job postings.
@@ -939,49 +1048,38 @@ def extract_tech_tools(df, description_col="description"):
     :rtype: pd.DataFrame
     """
     df_copy = df.copy()
-    
+
     tool_patterns = {
-        # --- Foundational & Spreadsheets ---
         "Excel": r"\b(Excel|Spreadsheets|MS Excel)\b",
         "Google_Sheets": r"\b(Google Sheets|G-Sheets)\b",
-        
-        # --- Modern Data Stack (Core) ---
         "Fivetran": r"\bFivetran\b",
         "Airbyte": r"\bAirbyte\b",
         "dbt": r"\bdbt\b",
         "Snowflake": r"\bSnowflake\b",
         "BigQuery": r"\b(BigQuery|Big Query)\b",
-        "Airflow": r"\b(Airflow|Apache Airflow)\b",
+        "Airflow": r"\b(Airflow)\b",
         "Prefect": r"\bPrefect\b",
         "Power_BI": r"\b(Power BI|PowerBI|MS Power BI)\b",
         "Tableau": r"\bTableau\b",
         "Looker": r"\bLooker\b",
-        
-        # --- Engineering & Infrastructure ---
         "Git": r"\b(Git|GitHub|GitLab|Version Control)\b",
         "Docker": r"\b(Docker|Containers)\b",
         "Kubernetes": r"\b(Kubernetes|K8s)\b",
         "Terraform": r"\bTerraform\b",
-        
-        # --- Cloud Platforms ---
         "AWS": r"\b(AWS|Amazon Web Services)\b",
-        "Azure": r"\b(Azure|Microsoft Azure)\b",
-        "GCP": r"\b(GCP|Google Cloud Platform|Google Cloud)\b",
-        
-        # --- Emerging 2026 Trends ---
+        "Azure": r"\b(Azure)\b",
+        "GCP": r"\b(GCP|Google Cloud)\b",
         "Databricks": r"\bDatabricks\b",
-        "Kafka": r"\b(Kafka|Apache Kafka)\b",
-        "Spark": r"\b(Spark|PySpark|Apache Spark)\b",
-        "Monte_Carlo": r"\bMonte Carlo\b"
+        "Kafka": r"\b(Kafka)\b",
+        "Spark": r"\b(Spark|PySpark)\b",
+        "Monte_Carlo": r"\bMonte Carlo\b",
     }
 
-    # Optimization: Convert to string and fill NaNs once
     descriptions = df_copy[description_col].astype("str").fillna("")
 
     for tool, pattern in tool_patterns.items():
-        # Case-insensitive regex for maximum coverage
         df_copy[tool] = descriptions.apply(
             lambda text: 1 if re.search(pattern, text, re.IGNORECASE) else 0
         )
-        
+
     return df_copy
